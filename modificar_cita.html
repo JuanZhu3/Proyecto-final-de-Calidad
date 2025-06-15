@@ -1,9 +1,61 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Modificar Cita</title>
-  <link rel="stylesheet" href="estilos.css">
+  <link rel="stylesheet" href="estilos.css" />
+  <style>
+    .form-group {
+      margin-bottom: 1.5em;
+    }
+
+    .input-icono {
+      position: relative;
+      width: 100%;
+      margin-bottom: 1.2em;
+    }
+
+    .input-icono .icono {
+      position: absolute;
+      top: 50%;
+      left: 0.8em;
+      transform: translateY(-50%);
+      font-size: 1.2em;
+      pointer-events: none;
+      color: #7b1fa2;
+    }
+
+    .input-icono input {
+      padding-left: 2.5em;
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      background-color: white;
+      border: 2px solid #9c27b0;
+      border-radius: 8px;
+      padding: 0.8em 1em;
+      font-size: 1em;
+      color: #333;
+      box-sizing: border-box;
+      cursor: pointer;
+    }
+
+    .input-icono input:focus {
+      outline: none;
+      border-color: #7b1fa2;
+      box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.2);
+    }
+
+    .error-msg {
+      color: #e53935;
+      font-size: 0.9em;
+      display: none;
+    }
+
+    .error-visible {
+      display: block;
+    }
+  </style>
 </head>
 <body>
   <div class="sidebar">
@@ -12,23 +64,76 @@
       <h3>Campus Connect</h3>
     </div>
     <ul>
-        <li><a href="menu_principal.html">Inicio</a></li>
-        <li><a href="cita.html">Citas</a></li>
-        <li><a href="prestamo_libro.html">Préstamos</a></li>
-        <li><a href="cuenta.html">Cuenta</a></li>
-        <li><a href="atencion_cliente.html">Atención al Cliente</a></li>
+      <li><a href="menu_principal.html">Inicio</a></li>
+      <li><a href="cita.html">Citas</a></li>
+      <li><a href="prestamo_libro.html">Préstamos</a></li>
+      <li><a href="cuenta.html">Cuenta</a></li>
+      <li><a href="atencion_cliente.html">Atención al Cliente</a></li>
     </ul>
   </div>
   <div class="main">
-    <div class="topbar">Modificar Cita</div>
+    <div class="topbar">
+      <span>CAMPUS CONNECT UTP</span>
+      <span>ESTUDIANTE ▼</span>
+    </div>
     <div class="content">
       <div class="card">
-        <h2>Modificar fecha y hora</h2>
-        <input type="date">
-        <input type="time">
-        <button>Guardar Cambios</button>
+        <h2>Selecciona día y hora</h2> <!-- Cambia por "Modificar fecha y hora" si deseas -->
+
+        <div class="form-group">
+          <label for="fecha">Fecha:</label>
+          <div class="input-icono">
+            <input type="date" id="fecha" required />
+          </div>
+          <div id="errorFecha" class="error-msg">No se permite seleccionar fines de semana ni días pasados.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="hora">Hora:</label>
+          <div class="input-icono">
+            <input type="time" id="hora" required disabled />
+          </div>
+        </div>
+
+        <button id="btnConfirmar" disabled>Confirmar Cita</button> <!-- Cambia texto si deseas -->
       </div>
     </div>
   </div>
+
+  <script>
+    const fecha = document.getElementById("fecha");
+    const hora = document.getElementById("hora");
+    const btn = document.getElementById("btnConfirmar");
+    const errorFecha = document.getElementById("errorFecha");
+
+    // Forzar apertura de calendario/reloj al hacer clic
+    fecha.addEventListener("click", () => fecha.showPicker && fecha.showPicker());
+    hora.addEventListener("click", () => hora.showPicker && hora.showPicker());
+
+    // Establecer fecha mínima como hoy
+    const hoy = new Date().toISOString().split("T")[0];
+    fecha.setAttribute("min", hoy);
+
+    fecha.addEventListener("change", () => {
+      const seleccionada = new Date(fecha.value);
+      const dia = seleccionada.getDay();
+
+      if (dia === 0 || dia === 6 || seleccionada < new Date(hoy)) {
+        errorFecha.classList.add("error-visible");
+        hora.disabled = true;
+        btn.disabled = true;
+      } else {
+        errorFecha.classList.remove("error-visible");
+        hora.disabled = false;
+        validarCampos();
+      }
+    });
+
+    hora.addEventListener("input", validarCampos);
+
+    function validarCampos() {
+      btn.disabled = !(fecha.value && hora.value && !hora.disabled);
+    }
+  </script>
 </body>
 </html>
