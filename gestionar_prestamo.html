@@ -12,11 +12,11 @@
       <h3>Campus Connect</h3>
     </div>
     <ul>
-        <li><a href="menu_principal.html">Inicio</a></li>
-        <li><a href="cita.html">Citas</a></li>
-        <li><a href="prestamo_libro.html">Préstamos</a></li>
-        <li><a href="cuenta.html">Cuenta</a></li>
-        <li><a href="atencion_cliente.html">Atención al Cliente</a></li>
+      <li><a href="menu_principal.html">Inicio</a></li>
+      <li><a href="cita.html">Citas</a></li>
+      <li><a href="prestamo_libro.html">Préstamos</a></li>
+      <li><a href="cuenta.html">Cuenta</a></li>
+      <li><a href="atencion_cliente.html">Atención al Cliente</a></li>
     </ul>
   </div>
   <div class="main">
@@ -25,11 +25,46 @@
     </div>
     <div class="content">
       <div class="card">
-        <h2>Listado de Préstamos</h2>
-        <p>[Listado de préstamos aquí]</p>
-        <button>Actualizar</button>
+        <h2>Mis Préstamos</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Libro</th>
+              <th>Fecha de Préstamo</th>
+              <th>Fecha de Devolución</th>
+              <th>Estado</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Álgebra Lineal</td>
+              <td>01/06/2025</td>
+              <td>16/06/2025</td>
+              <td>Activo</td>
+              <td><button onclick="devolver('Álgebra Lineal')">Devolver</button></td>
+            </tr>
+            <tr>
+              <td>Base de Datos</td>
+              <td>02/06/2025</td>
+              <td>17/06/2025</td>
+              <td>Activo</td>
+              <td><button onclick="devolver('Base de Datos')">Devolver</button></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div id="mensaje" class="mensaje"></div>
       </div>
     </div>
   </div>
+
+  <script>
+    function devolver(libro) {
+      const mensaje = document.getElementById("mensaje");
+      mensaje.innerHTML = `✅ El libro <strong>${libro}</strong> ha sido devuelto correctamente.`;
+      mensaje.style.display = "block";
+    }
+  </script>
 </body>
 </html>

@@ -22,17 +22,49 @@
   <div class="main">
     <div class="topbar">
       <span>CAMPUS CONNECT UTP</span>
+      <span>ESTUDIANTE ▼</span>
     </div>
     <div class="content">
       <div class="card">
         <h2>Información del Usuario</h2>
-        <p>Nombre: Juan Pérez</p>
-        <p>Correo: juan.perez@utp.ac.pa</p>
-        <p>Carrera: Ingeniería en Sistemas</p>
-        <button>Editar Perfil</button>
-        <button>Cerrar Sesión</button>
+        <label>Nombre:</label>
+        <input type="text" id="nombre" value="Juan Pérez" disabled />
+        
+        <label>Correo:</label>
+        <input type="email" id="correo" value="juan.perez@utp.ac.pa" disabled />
+        
+        <label>Carrera:</label>
+        <input type="text" id="carrera" value="Ingeniería en Sistemas" disabled />
+        
+        <button id="btnEditar">Editar Perfil</button>
+        <button id="btnGuardar" style="display:none;">Guardar Cambios</button>
+        <button onclick="cerrarSesion()">Cerrar Sesión</button>
       </div>
     </div>
   </div>
+
+  <script>
+    const btnEditar = document.getElementById("btnEditar");
+    const btnGuardar = document.getElementById("btnGuardar");
+    const campos = ["nombre", "correo", "carrera"];
+
+    btnEditar.addEventListener("click", () => {
+      campos.forEach(id => document.getElementById(id).disabled = false);
+      btnEditar.style.display = "none";
+      btnGuardar.style.display = "inline-block";
+    });
+
+    btnGuardar.addEventListener("click", () => {
+      campos.forEach(id => document.getElementById(id).disabled = true);
+      btnEditar.style.display = "inline-block";
+      btnGuardar.style.display = "none";
+      alert("✅ Cambios guardados correctamente.");
+    });
+
+    function cerrarSesion() {
+      alert("Has cerrado sesión.");
+      location.href = "menu_principal.html";
+    }
+  </script>
 </body>
 </html>

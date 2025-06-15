@@ -12,11 +12,11 @@
       <h3>Campus Connect</h3>
     </div>
     <ul>
-        <li><a href="menu_principal.html">Inicio</a></li>
-        <li><a href="cita.html">Citas</a></li>
-        <li><a href="prestamo_libro.html">Préstamos</a></li>
-        <li><a href="cuenta.html">Cuenta</a></li>
-        <li><a href="atencion_cliente.html">Atención al Cliente</a></li>
+      <li><a href="menu_principal.html">Inicio</a></li>
+      <li><a href="cita.html">Citas</a></li>
+      <li><a href="prestamo_libro.html">Préstamos</a></li>
+      <li><a href="cuenta.html">Cuenta</a></li>
+      <li><a href="atencion_cliente.html">Atención al Cliente</a></li>
     </ul>
   </div>
   <div class="main">
@@ -26,10 +26,51 @@
     <div class="content">
       <div class="card">
         <h2>Libros Disponibles</h2>
-        <p>[Tabla de libros aquí]</p>
-        <button>Agregar a Mochila</button>
+        <table>
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Autor</th>
+              <th>Disponibilidad</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Álgebra Lineal</td>
+              <td>David Lay</td>
+              <td class="disponible">Disponible</td>
+              <td><button onclick="solicitar('Álgebra Lineal')">Solicitar</button></td>
+            </tr>
+            <tr>
+              <td>Redes de Computadoras</td>
+              <td>Andrew Tanenbaum</td>
+              <td class="nodisponible">No Disponible</td>
+              <td><button disabled>Solicitar</button></td>
+            </tr>
+            <tr>
+              <td>Base de Datos</td>
+              <td>Coronel</td>
+              <td class="disponible">Disponible</td>
+              <td><button onclick="solicitar('Base de Datos')">Solicitar</button></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div id="mensaje" class="mensaje"></div>
       </div>
     </div>
   </div>
+
+  <script>
+    function solicitar(libro) {
+      const mensaje = document.getElementById("mensaje");
+      const fechaEntrega = new Date();
+      fechaEntrega.setDate(fechaEntrega.getDate() + 15);
+      const fechaTexto = fechaEntrega.toISOString().split("T")[0];
+      mensaje.innerHTML = `📚 Has solicitado <strong>${libro}</strong>. Fecha de devolución: <strong>${fechaTexto}</strong>.`;
+      mensaje.style.display = "block";
+    }
+  </script>
 </body>
 </html>

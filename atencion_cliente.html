@@ -26,11 +26,62 @@
     <div class="content">
       <div class="card">
         <h2>¿Necesitas ayuda?</h2>
-        <p>Escríbenos un mensaje y nos pondremos en contacto contigo.</p>
-        <textarea placeholder="Describe tu problema o pregunta..."></textarea>
-        <button>Enviar</button>
+        <p>Completa el formulario y te contactaremos:</p>
+
+        <label>Nombre:</label>
+        <input type="text" value="Juan Pérez" disabled />
+
+        <label>Correo:</label>
+        <input type="email" value="juan.perez@utp.ac.pa" disabled />
+
+        <label>Mensaje:</label>
+        <textarea id="mensaje" placeholder="Describe tu problema o pregunta..."></textarea>
+
+        <button onclick="enviarMensaje()">Enviar</button>
+        <div id="confirmacion" class="mensaje" style="display:none;"></div>
+      </div>
+
+      <div class="card">
+        <h2>Mis Solicitudes</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Ticket</th>
+              <th>Asunto</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>#101</td>
+              <td>Problema al agendar cita</td>
+              <td>Resuelto</td>
+            </tr>
+            <tr>
+              <td>#102</td>
+              <td>Consulta sobre préstamo</td>
+              <td>En proceso</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
+
+  <script>
+    function enviarMensaje() {
+      const mensaje = document.getElementById("mensaje").value.trim();
+      const confirmacion = document.getElementById("confirmacion");
+
+      if (mensaje === "") {
+        alert("Por favor, escribe un mensaje.");
+        return;
+      }
+
+      confirmacion.innerHTML = "✅ Tu mensaje ha sido enviado. Recibirás respuesta pronto.";
+      confirmacion.style.display = "block";
+      document.getElementById("mensaje").value = "";
+    }
+  </script>
 </body>
 </html>
