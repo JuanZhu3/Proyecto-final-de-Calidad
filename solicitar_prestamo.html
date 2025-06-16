@@ -42,31 +42,31 @@
               <th>Acción</th>
             </tr>
           </thead>
-          <tbody id="listaLibros">
-            <!-- Los libros serán generados dinámicamente -->
-          </tbody>
+          <tbody id="listaLibros"></tbody>
         </table>
 
         <div id="mensaje" class="mensaje"></div>
       </div>
     </div>
 
-    <!-- PANTALLA DE MOCHILA -->
     <div class="content" id="pantallaMochila" style="display: none;">
-      <div class="card">
+      <div class="card mochila-libros">
         <h2>🎒 Mochila de Libros</h2>
         <div id="mochilaVacia" style="display: none;">USTED NO CUENTA CON LIBROS EN LA MOCHILA</div>
         <div id="detalleMochila" style="display: none;">
-          <div id="libroActual"></div>
-          <input type="range" id="diasSlider" min="1" max="15" value="7" />
-          <p>Días de préstamo: <span id="diasSeleccionados">7</span></p>
-          <button id="btnSolicitar">📨 Solicitar</button>
+          <div id="libroActual" class="tarjeta-libro"></div>
+          <div class="slider-contenedor">
+            <input type="range" id="diasSlider" min="1" max="15" value="7" />
+            <span id="diasSeleccionados">7 días</span>
+          </div>
+          <button class="btn-accion" id="btnSolicitar">📨 Solicitar</button>
         </div>
-        <h3>Otros Libros</h3>
-        <div id="otrosLibros">
-          <!-- Mostrará otros libros para explorar -->
+
+        <div class="otros-libros">
+          <h4>Otros Libros</h4>
+          <div id="otrosLibros"></div>
+          <button class="btn-accion" onclick="volverAPantallaLibros()">⬅ Volver</button>
         </div>
-        <button onclick="volverAPantallaLibros()">🔙 Volver</button>
       </div>
     </div>
   </div>
@@ -120,14 +120,12 @@
 
           const disponibilidad = document.createElement("td");
           disponibilidad.textContent = libro.disponible ? "Disponible" : "NO DISPONIBLE";
-          disponibilidad.className = libro.disponible ? "disponible" : "nodisponible";
 
           const accion = document.createElement("td");
           const boton = document.createElement("button");
           boton.textContent = "Agregar a mochila";
           if (!libro.disponible || mochila.length >= 3) {
             boton.disabled = true;
-            boton.style.color = "gray";
           }
           boton.onclick = () => agregarLibro(index);
           accion.appendChild(boton);
@@ -184,7 +182,7 @@
     }
 
     diasSlider.addEventListener("input", () => {
-      diasSeleccionados.textContent = diasSlider.value;
+      diasSeleccionados.textContent = `${diasSlider.value} días`;
     });
 
     btnSolicitar.addEventListener("click", () => {
@@ -200,8 +198,8 @@
       librosCatalogo.forEach((libro) => {
         if (libro.disponible) {
           const div = document.createElement("div");
+          div.classList.add("libro");
           div.innerHTML = `<strong>${libro.titulo}</strong><br><em>${libro.autor}</em>`;
-          div.style.marginBottom = "10px";
           otrosLibros.appendChild(div);
         }
       });
@@ -215,11 +213,9 @@
 
     busqueda.addEventListener("input", () => renderizarLibros(busqueda.value));
 
-    // Simular error de conexión
     window.addEventListener("offline", () => alert("⚠️ Error de conexión. Intenta reconectar."));
     window.addEventListener("online", () => alert("✅ Conexión restablecida."));
 
-    // Iniciar
     renderizarLibros();
   </script>
 </body>
