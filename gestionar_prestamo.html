@@ -2,13 +2,13 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Gestionar Préstamo</title>
+  <title>Gestionar Préstamos</title>
   <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
   <div class="sidebar">
     <div class="sidebar-header">
-      <span class="avatar">📝</span>
+      <span class="avatar">📚</span>
       <h3>Campus Connect</h3>
     </div>
     <ul>
@@ -19,52 +19,163 @@
       <li><a href="atencion_cliente.html">Atención al Cliente</a></li>
     </ul>
   </div>
+
   <div class="main">
     <div class="topbar">
-      <span>CAMPUS CONNECT UTP</span>
+      <span>CAMPUS CONNECT UTP - Bienestar Estudiantil</span>
     </div>
-    <div class="content">
+
+    <div class="content" id="pantallaInicio">
       <div class="card">
-        <h2>Mis Préstamos</h2>
+        <h2>Gestión de Préstamos</h2>
+        <button onclick="mostrarPrestamos()">Consultar Préstamos Activos</button>
+        <button onclick="mostrarRegistroLibro()">Registrar Nuevo Libro</button>
+      </div>
+    </div>
+
+    <div class="content" id="pantallaPrestamos" style="display:none;">
+      <div class="card">
+        <h2>Préstamos Activos</h2>
         <table>
           <thead>
             <tr>
+              <th>Estudiante</th>
               <th>Libro</th>
-              <th>Fecha de Préstamo</th>
-              <th>Fecha de Devolución</th>
+              <th>Fecha Préstamo</th>
+              <th>Fecha Devolución</th>
               <th>Estado</th>
-              <th>Acción</th>
+              <th>Modificar</th>
             </tr>
           </thead>
           <tbody>
             <tr>
+              <td>Juan Pérez</td>
               <td>Álgebra Lineal</td>
               <td>01/06/2025</td>
               <td>16/06/2025</td>
               <td>Activo</td>
-              <td><button onclick="devolver('Álgebra Lineal')">Devolver</button></td>
-            </tr>
-            <tr>
-              <td>Base de Datos</td>
-              <td>02/06/2025</td>
-              <td>17/06/2025</td>
-              <td>Activo</td>
-              <td><button onclick="devolver('Base de Datos')">Devolver</button></td>
+              <td><button onclick="editarPrestamo()">✏️</button></td>
             </tr>
           </tbody>
         </table>
+        <button onclick="volverInicio()">🔙 Volver</button>
+      </div>
+    </div>
 
-        <div id="mensaje" class="mensaje"></div>
+    <div class="content" id="pantallaEditar" style="display:none;">
+      <div class="card">
+        <h2>Editar Préstamo</h2>
+        <form id="formPrestamo">
+          <h3>Datos del Libro</h3>
+          <p>Título: Álgebra Lineal</p>
+          <p>Autor: David Lay</p>
+          <p>ISBN: 1234567890</p>
+
+          <h3>Datos del Estudiante</h3>
+          <p>Nombre: Juan Pérez</p>
+          <p>Cédula: 8-1234-5678</p>
+          <p>Correo: juan.perez@utp.ac.pa</p>
+          <label>Carrera: <input type="text" id="carrera" value="Ingeniería de Software"></label>
+
+          <h3>Datos del Préstamo</h3>
+          <p>ID: P2025-001</p>
+          <label>Fecha Entrega: <input type="date" id="fechaEntrega"></label><br>
+          <label>Fecha Límite Devolución: <input type="date" id="fechaLimite"></label><br>
+          <label>Fecha Devolución Real: <input type="date" id="fechaReal"></label><br>
+          <label>Estado:
+            <select id="estado">
+              <option>Activo</option>
+              <option>Finalizado</option>
+              <option>Retrasado</option>
+            </select>
+          </label><br><br>
+
+          <button type="button" onclick="guardarCambios()">Guardar</button>
+          <button type="button" onclick="eliminarPrestamo()">Eliminar Préstamo</button>
+          <button onclick="volverInicio()">🔙 Volver</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="content" id="pantallaRegistro" style="display:none;">
+      <div class="card">
+        <h2>Registrar Nuevo Libro</h2>
+        <form id="formLibro">
+          <label>Título: <input type="text" id="tituloLibro"></label><br>
+          <label>Autor: <input type="text" id="autorLibro"></label><br>
+          <label>ISBN: <input type="text" id="isbnLibro"></label><br>
+          <label>Portada (URL): <input type="text" id="portadaLibro"></label><br>
+          <label>Número de copias: <input type="number" id="copiasLibro"></label><br>
+          <label>Estado:
+            <select id="estadoLibro">
+              <option>Disponible</option>
+              <option>No Disponible</option>
+            </select>
+          </label><br><br>
+          <button type="button" onclick="registrarLibro()">Guardar</button>
+          <button onclick="volverInicio()">🔙 Volver</button>
+        </form>
+        <div id="mensajeRegistro"></div>
       </div>
     </div>
   </div>
 
   <script>
-    function devolver(libro) {
-      const mensaje = document.getElementById("mensaje");
-      mensaje.innerHTML = `✅ El libro <strong>${libro}</strong> ha sido devuelto correctamente.`;
-      mensaje.style.display = "block";
+    const hoy = new Date().toISOString().split("T")[0];
+    document.getElementById("fechaEntrega").setAttribute("min", hoy);
+    document.getElementById("fechaLimite").setAttribute("min", hoy);
+    document.getElementById("fechaReal").setAttribute("min", hoy);
+
+    function mostrarPrestamos() {
+      ocultarTodo();
+      document.getElementById("pantallaPrestamos").style.display = "block";
     }
+
+    function mostrarRegistroLibro() {
+      ocultarTodo();
+      document.getElementById("pantallaRegistro").style.display = "block";
+    }
+
+    function editarPrestamo() {
+      ocultarTodo();
+      document.getElementById("pantallaEditar").style.display = "block";
+    }
+
+    function volverInicio() {
+      ocultarTodo();
+      document.getElementById("pantallaInicio").style.display = "block";
+    }
+
+    function ocultarTodo() {
+      document.querySelectorAll(".content").forEach(div => div.style.display = "none");
+    }
+
+    function guardarCambios() {
+      alert("✅ Datos actualizados correctamente.\nCorreo enviado al estudiante y a B.E.");
+    }
+
+    function eliminarPrestamo() {
+      alert("❌ Préstamo eliminado y registrado en el historial del estudiante.");
+      volverInicio();
+    }
+
+    function registrarLibro() {
+      const titulo = document.getElementById("tituloLibro").value;
+      const autor = document.getElementById("autorLibro").value;
+      const isbn = document.getElementById("isbnLibro").value;
+      const copias = document.getElementById("copiasLibro").value;
+
+      if (!titulo || !autor || !isbn || copias <= 0) {
+        document.getElementById("mensajeRegistro").innerText = "⚠️ Datos incompletos o incorrectos.";
+        return;
+      }
+
+      document.getElementById("mensajeRegistro").innerText = "✅ ¡El libro se ha registrado correctamente!";
+    }
+
+    // Simulación de error de conexión
+    window.addEventListener("offline", () => alert("⚠️ Error de conexión. Intentando reconectar..."));
+    window.addEventListener("online", () => alert("✅ Conexión restablecida."));
   </script>
 </body>
 </html>

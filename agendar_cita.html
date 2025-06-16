@@ -19,6 +19,7 @@
       <li><a href="atencion_cliente.html">Atención al Cliente</a></li>
     </ul>
   </div>
+
   <div class="main">
     <div class="topbar">
       <span>CAMPUS CONNECT UTP</span>
@@ -26,75 +27,107 @@
     </div>
     <div class="content">
       <div class="card">
-        <h2>Agendar una Cita</h2>
+        <h2>Calendario de Citas</h2>
+        <label for="fecha">Selecciona una fecha:</label>
+        <input type="date" id="fecha" onclick="this.showPicker()" />
+        <div id="errorFecha" class="error-msg">¡Este día no está disponible!</div>
+        <button id="abrirModal" disabled>Gestionar Cita</button>
+      </div>
+    </div>
+  </div>
 
-        <div class="form-group">
-          <label for="tipoCita">Tipo de Cita:</label>
-          <select id="tipoCita" required>
-            <option value="">Selecciona una opción</option>
-            <option value="psicologia">Psicología</option>
-            <option value="becas">Becas</option>
-            <option value="consejeria">Consejería Académica</option>
-          </select>
+  <!-- MODAL -->
+  <div id="modalCita" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>Gestión de Citas</h3>
+      <div id="modalPaso1">
+        <p>¿Deseas agendar una cita para el día <strong id="fechaSeleccionada"></strong>?</p>
+        <div class="modal-buttons">
+          <button id="btnAgendar">Agendar</button>
+          <button id="btnCancelar">Cancelar</button>
         </div>
+      </div>
 
-        <div class="form-group">
-          <label for="fecha">Fecha:</label>
-          <input type="date" id="fecha" required />
-          <div id="errorFecha" class="error-msg">No se permite seleccionar fines de semana ni días pasados.</div>
-        </div>
+      <div id="modalPaso2" style="display: none;">
+        <label for="hora">Selecciona la hora:</label>
+        <input type="time" id="hora" onclick="this.showPicker()" />
+        <button id="confirmarHora">Confirmar</button>
+        <div class="error-msg" id="errorHora">La hora seleccionada ya no está disponible.</div>
+      </div>
 
-        <div class="form-group">
-          <label for="hora">Hora:</label>
-          <input type="time" id="hora" required disabled />
-        </div>
-
-        <button id="btnConfirmar" disabled>Confirmar Cita</button>
-        <div id="resumenCita" class="resumen-cita"></div>
+      <div id="modalPaso3" style="display: none;">
+        <div id="resumenCita" class="resumen-cita">✅ Tu cita ha sido registrada.</div>
       </div>
     </div>
   </div>
 
   <script>
     const fecha = document.getElementById("fecha");
-    const hora = document.getElementById("hora");
-    const tipoCita = document.getElementById("tipoCita");
-    const btn = document.getElementById("btnConfirmar");
-    const errorFecha = document.getElementById("errorFecha");
+    const abrirModal = document.getElementById("abrirModal");
+    const modal = document.getElementById("modalCita");
+    const btnCancelar = document.getElementById("btnCancelar");
+    const btnAgendar = document.getElementById("btnAgendar");
+    const confirmarHora = document.getElementById("confirmarHora");
     const resumen = document.getElementById("resumenCita");
+    const fechaSeleccionada = document.getElementById("fechaSeleccionada");
+    const errorFecha = document.getElementById("errorFecha");
+    const errorHora = document.getElementById("errorHora");
+    const modalPaso1 = document.getElementById("modalPaso1");
+    const modalPaso2 = document.getElementById("modalPaso2");
+    const modalPaso3 = document.getElementById("modalPaso3");
+    const hora = document.getElementById("hora");
 
     const hoy = new Date().toISOString().split("T")[0];
     fecha.setAttribute("min", hoy);
 
-    fecha.addEventListener("click", () => fecha.showPicker && fecha.showPicker());
-    hora.addEventListener("click", () => hora.showPicker && hora.showPicker());
+    const diasDisponibles = [1, 2, 3, 4, 5]; // lunes a viernes
 
     fecha.addEventListener("change", () => {
-      const seleccionada = new Date(fecha.value);
-      const dia = seleccionada.getDay();
-      if (dia === 0 || dia === 6 || seleccionada < new Date(hoy)) {
+      const d = new Date(fecha.value);
+      if (!diasDisponibles.includes(d.getDay())) {
+        abrirModal.disabled = true;
         errorFecha.classList.add("error-visible");
-        hora.disabled = true;
-        btn.disabled = true;
       } else {
+        abrirModal.disabled = false;
         errorFecha.classList.remove("error-visible");
-        hora.disabled = false;
-        validarCampos();
       }
     });
 
-    tipoCita.addEventListener("change", validarCampos);
-    hora.addEventListener("input", validarCampos);
-
-    function validarCampos() {
-      btn.disabled = !(tipoCita.value && fecha.value && hora.value && !hora.disabled);
-    }
-
-    btn.addEventListener("click", () => {
-      const resumenTexto = `✅ Has agendado una cita de <strong>${tipoCita.options[tipoCita.selectedIndex].text}</strong> el <strong>${fecha.value}</strong> a las <strong>${hora.value}</strong>.`;
-      resumen.innerHTML = resumenTexto;
-      resumen.style.display = "block";
+    abrirModal.addEventListener("click", () => {
+      modal.style.display = "block";
+      fechaSeleccionada.textContent = fecha.value;
+      modalPaso1.style.display = "block";
+      modalPaso2.style.display = "none";
+      modalPaso3.style.display = "none";
     });
+
+    btnCancelar.addEventListener("click", () => {
+      modal.style.display = "none";
+    });
+
+    btnAgendar.addEventListener("click", () => {
+      modalPaso1.style.display = "none";
+      modalPaso2.style.display = "block";
+    });
+
+    confirmarHora.addEventListener("click", () => {
+      const horaSeleccionada = hora.value;
+      if (horaSeleccionada === "12:00" || horaSeleccionada === "") {
+        errorHora.classList.add("error-visible");
+        return;
+      }
+
+      errorHora.classList.remove("error-visible");
+      modalPaso2.style.display = "none";
+      modalPaso3.style.display = "block";
+      resumen.innerHTML = `✅ Has agendado tu cita para el <strong>${fecha.value}</strong> a las <strong>${horaSeleccionada}</strong>. Se ha enviado un correo de confirmación a tu cuenta institucional.`;
+    });
+
+    window.onclick = function(event) {
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    };
   </script>
 </body>
 </html>

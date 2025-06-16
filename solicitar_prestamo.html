@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Solicitar Préstamo</title>
-  <link rel="stylesheet" href="estilos.css">
+  <link rel="stylesheet" href="estilos.css" />
 </head>
 <body>
   <div class="sidebar">
@@ -19,58 +19,208 @@
       <li><a href="atencion_cliente.html">Atención al Cliente</a></li>
     </ul>
   </div>
+
   <div class="main">
     <div class="topbar">
       <span>CAMPUS CONNECT UTP</span>
+      <button id="mochilaBtn">🎒 Mochila (<span id="contadorMochila">0</span>)</button>
     </div>
-    <div class="content">
+
+    <div class="content" id="pantallaLibros">
       <div class="card">
-        <h2>Libros Disponibles</h2>
-        <table>
+        <h2>Libros de B.E</h2>
+        <input type="text" id="busqueda" placeholder="Buscar por título o autor..." />
+        <div id="limiteMsg" class="mensaje" style="display:none;">⚠️ Ha alcanzado el límite de 3 libros</div>
+
+        <table id="tablaLibros">
           <thead>
             <tr>
+              <th>Estado</th>
               <th>Título</th>
               <th>Autor</th>
               <th>Disponibilidad</th>
               <th>Acción</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td>Álgebra Lineal</td>
-              <td>David Lay</td>
-              <td class="disponible">Disponible</td>
-              <td><button onclick="solicitar('Álgebra Lineal')">Solicitar</button></td>
-            </tr>
-            <tr>
-              <td>Redes de Computadoras</td>
-              <td>Andrew Tanenbaum</td>
-              <td class="nodisponible">No Disponible</td>
-              <td><button disabled>Solicitar</button></td>
-            </tr>
-            <tr>
-              <td>Base de Datos</td>
-              <td>Coronel</td>
-              <td class="disponible">Disponible</td>
-              <td><button onclick="solicitar('Base de Datos')">Solicitar</button></td>
-            </tr>
+          <tbody id="listaLibros">
+            <!-- Los libros serán generados dinámicamente -->
           </tbody>
         </table>
 
         <div id="mensaje" class="mensaje"></div>
       </div>
     </div>
+
+    <!-- PANTALLA DE MOCHILA -->
+    <div class="content" id="pantallaMochila" style="display: none;">
+      <div class="card">
+        <h2>🎒 Mochila de Libros</h2>
+        <div id="mochilaVacia" style="display: none;">USTED NO CUENTA CON LIBROS EN LA MOCHILA</div>
+        <div id="detalleMochila" style="display: none;">
+          <div id="libroActual"></div>
+          <input type="range" id="diasSlider" min="1" max="15" value="7" />
+          <p>Días de préstamo: <span id="diasSeleccionados">7</span></p>
+          <button id="btnSolicitar">📨 Solicitar</button>
+        </div>
+        <h3>Otros Libros</h3>
+        <div id="otrosLibros">
+          <!-- Mostrará otros libros para explorar -->
+        </div>
+        <button onclick="volverAPantallaLibros()">🔙 Volver</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    function solicitar(libro) {
-      const mensaje = document.getElementById("mensaje");
-      const fechaEntrega = new Date();
-      fechaEntrega.setDate(fechaEntrega.getDate() + 15);
-      const fechaTexto = fechaEntrega.toISOString().split("T")[0];
-      mensaje.innerHTML = `📚 Has solicitado <strong>${libro}</strong>. Fecha de devolución: <strong>${fechaTexto}</strong>.`;
-      mensaje.style.display = "block";
+    const librosCatalogo = [
+      { titulo: "Álgebra Lineal", autor: "David Lay", disponible: true },
+      { titulo: "Redes de Computadoras", autor: "Tanenbaum", disponible: false },
+      { titulo: "Base de Datos", autor: "Coronel", disponible: true },
+      { titulo: "Inteligencia Artificial", autor: "Russell & Norvig", disponible: true },
+      { titulo: "Programación Avanzada", autor: "Robert Lafore", disponible: false }
+    ];
+
+    let mochila = [];
+    let libroIndex = 0;
+
+    const listaLibros = document.getElementById("listaLibros");
+    const busqueda = document.getElementById("busqueda");
+    const mensaje = document.getElementById("mensaje");
+    const limiteMsg = document.getElementById("limiteMsg");
+    const contadorMochila = document.getElementById("contadorMochila");
+
+    const pantallaLibros = document.getElementById("pantallaLibros");
+    const pantallaMochila = document.getElementById("pantallaMochila");
+    const mochilaBtn = document.getElementById("mochilaBtn");
+    const mochilaVacia = document.getElementById("mochilaVacia");
+    const detalleMochila = document.getElementById("detalleMochila");
+    const libroActual = document.getElementById("libroActual");
+    const diasSlider = document.getElementById("diasSlider");
+    const diasSeleccionados = document.getElementById("diasSeleccionados");
+    const btnSolicitar = document.getElementById("btnSolicitar");
+    const otrosLibros = document.getElementById("otrosLibros");
+
+    function renderizarLibros(filtro = "") {
+      listaLibros.innerHTML = "";
+      librosCatalogo.forEach((libro, index) => {
+        if (
+          libro.titulo.toLowerCase().includes(filtro.toLowerCase()) ||
+          libro.autor.toLowerCase().includes(filtro.toLowerCase())
+        ) {
+          const fila = document.createElement("tr");
+
+          const estado = document.createElement("td");
+          estado.innerHTML = libro.disponible ? "🟢" : "🔴";
+
+          const titulo = document.createElement("td");
+          titulo.textContent = libro.titulo;
+
+          const autor = document.createElement("td");
+          autor.textContent = libro.autor;
+
+          const disponibilidad = document.createElement("td");
+          disponibilidad.textContent = libro.disponible ? "Disponible" : "NO DISPONIBLE";
+          disponibilidad.className = libro.disponible ? "disponible" : "nodisponible";
+
+          const accion = document.createElement("td");
+          const boton = document.createElement("button");
+          boton.textContent = "Agregar a mochila";
+          if (!libro.disponible || mochila.length >= 3) {
+            boton.disabled = true;
+            boton.style.color = "gray";
+          }
+          boton.onclick = () => agregarLibro(index);
+          accion.appendChild(boton);
+
+          fila.append(estado, titulo, autor, disponibilidad, accion);
+          listaLibros.appendChild(fila);
+        }
+      });
     }
+
+    function agregarLibro(index) {
+      const libro = librosCatalogo[index];
+      if (mochila.length >= 3) {
+        limiteMsg.style.display = "block";
+        return;
+      }
+
+      if (!libro.disponible) {
+        mensaje.textContent = "❌ El libro no está disponible.";
+        return;
+      }
+
+      mochila.push({ ...libro });
+      librosCatalogo[index].disponible = false;
+      mensaje.innerHTML = `📚 ¡${libro.titulo} añadido a tu mochila!`;
+      mensaje.style.display = "block";
+      contadorMochila.textContent = mochila.length;
+      renderizarLibros(busqueda.value);
+      setTimeout(() => (mensaje.style.display = "none"), 3000);
+    }
+
+    mochilaBtn.addEventListener("click", () => {
+      pantallaLibros.style.display = "none";
+      pantallaMochila.style.display = "block";
+      mostrarMochila();
+    });
+
+    function mostrarMochila() {
+      if (mochila.length === 0) {
+        mochilaVacia.style.display = "block";
+        detalleMochila.style.display = "none";
+      } else {
+        mochilaVacia.style.display = "none";
+        detalleMochila.style.display = "block";
+        libroIndex = 0;
+        actualizarLibroActual();
+      }
+      mostrarOtrosLibros();
+    }
+
+    function actualizarLibroActual() {
+      const libro = mochila[libroIndex];
+      libroActual.innerHTML = `<h3>${libro.titulo}</h3><p><em>${libro.autor}</em></p>`;
+    }
+
+    diasSlider.addEventListener("input", () => {
+      diasSeleccionados.textContent = diasSlider.value;
+    });
+
+    btnSolicitar.addEventListener("click", () => {
+      const id = "P" + Math.floor(Math.random() * 9000 + 1000);
+      alert(`✅ Solicitud confirmada. ID del préstamo: ${id}`);
+      mochila = [];
+      contadorMochila.textContent = "0";
+      volverAPantallaLibros();
+    });
+
+    function mostrarOtrosLibros() {
+      otrosLibros.innerHTML = "";
+      librosCatalogo.forEach((libro) => {
+        if (libro.disponible) {
+          const div = document.createElement("div");
+          div.innerHTML = `<strong>${libro.titulo}</strong><br><em>${libro.autor}</em>`;
+          div.style.marginBottom = "10px";
+          otrosLibros.appendChild(div);
+        }
+      });
+    }
+
+    function volverAPantallaLibros() {
+      pantallaLibros.style.display = "block";
+      pantallaMochila.style.display = "none";
+      renderizarLibros(busqueda.value);
+    }
+
+    busqueda.addEventListener("input", () => renderizarLibros(busqueda.value));
+
+    // Simular error de conexión
+    window.addEventListener("offline", () => alert("⚠️ Error de conexión. Intenta reconectar."));
+    window.addEventListener("online", () => alert("✅ Conexión restablecida."));
+
+    // Iniciar
+    renderizarLibros();
   </script>
 </body>
 </html>

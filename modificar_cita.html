@@ -19,6 +19,7 @@
       <li><a href="atencion_cliente.html">Atención al Cliente</a></li>
     </ul>
   </div>
+
   <div class="main">
     <div class="topbar">
       <span>CAMPUS CONNECT UTP</span>
@@ -44,42 +45,59 @@
 
         <div class="form-group">
           <label for="fecha">Nueva fecha:</label>
-          <input type="date" id="fecha" required />
-          <div id="errorFecha" class="error-msg">No se permite seleccionar fines de semana ni días pasados.</div>
+          <input type="date" id="fecha" required onclick="this.showPicker()" />
+          <div id="errorFecha" class="error-msg">El día seleccionado no está disponible. Solo días hábiles con disponibilidad.</div>
         </div>
 
         <div class="form-group">
           <label for="hora">Nueva hora:</label>
-          <input type="time" id="hora" required disabled />
+          <input type="time" id="hora" required disabled onclick="this.showPicker()" />
+          <div id="errorHora" class="error-msg">El horario seleccionado no está disponible.</div>
         </div>
 
         <button id="btnConfirmar" disabled>Confirmar Cambios</button>
+        <button id="btnCancelarCita">Cancelar Cita</button>
+
         <div id="resumenCita" class="resumen-cita"></div>
       </div>
     </div>
   </div>
 
+  <!-- Modal de confirmación de cancelación -->
+  <div id="modalCancelar" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3>¿Deseas cancelar tu cita?</h3>
+      <p>Esta acción no se puede deshacer. ¿Confirmas la cancelación?</p>
+      <button id="confirmarCancelacion">Confirmar Cancelación</button>
+      <button onclick="document.getElementById('modalCancelar').style.display='none'">Volver</button>
+    </div>
+  </div>
+
   <script>
+    const tipoCita = document.getElementById("tipoCita");
     const fecha = document.getElementById("fecha");
     const hora = document.getElementById("hora");
-    const tipoCita = document.getElementById("tipoCita");
-    const btn = document.getElementById("btnConfirmar");
-    const errorFecha = document.getElementById("errorFecha");
+    const btnConfirmar = document.getElementById("btnConfirmar");
+    const btnCancelarCita = document.getElementById("btnCancelarCita");
     const resumen = document.getElementById("resumenCita");
+    const errorFecha = document.getElementById("errorFecha");
+    const errorHora = document.getElementById("errorHora");
+    const modalCancelar = document.getElementById("modalCancelar");
+    const confirmarCancelacion = document.getElementById("confirmarCancelacion");
 
     const hoy = new Date().toISOString().split("T")[0];
+    const citaAnterior = new Date("2025-06-17T10:00:00");
     fecha.setAttribute("min", hoy);
 
-    fecha.addEventListener("click", () => fecha.showPicker && fecha.showPicker());
-    hora.addEventListener("click", () => hora.showPicker && hora.showPicker());
-
+    // Validar día disponible
     fecha.addEventListener("change", () => {
       const seleccionada = new Date(fecha.value);
       const dia = seleccionada.getDay();
-      if (dia === 0 || dia === 6 || seleccionada < new Date(hoy)) {
+      const esValida = dia >= 1 && dia <= 5 && seleccionada >= new Date(hoy);
+      if (!esValida) {
         errorFecha.classList.add("error-visible");
         hora.disabled = true;
-        btn.disabled = true;
+        btnConfirmar.disabled = true;
       } else {
         errorFecha.classList.remove("error-visible");
         hora.disabled = false;
@@ -87,17 +105,54 @@
       }
     });
 
+    // Validar hora disponible
+    hora.addEventListener("input", () => {
+      if (hora.value === "12:00") {
+        errorHora.classList.add("error-visible");
+        btnConfirmar.disabled = true;
+      } else {
+        errorHora.classList.remove("error-visible");
+        validarCampos();
+      }
+    });
+
     tipoCita.addEventListener("change", validarCampos);
-    hora.addEventListener("input", validarCampos);
 
     function validarCampos() {
-      btn.disabled = !(tipoCita.value && fecha.value && hora.value && !hora.disabled);
+      if (tipoCita.value && fecha.value && hora.value && !errorFecha.classList.contains("error-visible") && !errorHora.classList.contains("error-visible")) {
+        btnConfirmar.disabled = false;
+      } else {
+        btnConfirmar.disabled = true;
+      }
     }
 
-    btn.addEventListener("click", () => {
-      const resumenTexto = `📌 Has modificado tu cita a <strong>${tipoCita.options[tipoCita.selectedIndex].text}</strong> el <strong>${fecha.value}</strong> a las <strong>${hora.value}</strong>.`;
-      resumen.innerHTML = resumenTexto;
+    btnConfirmar.addEventListener("click", () => {
+      const nuevaCita = new Date(`${fecha.value}T${hora.value}`);
+      const diferenciaHoras = (citaAnterior - nuevaCita) / (1000 * 60 * 60);
+      let liberaAnterior = diferenciaHoras >= 24;
+      resumen.innerHTML = `✅ Tu cita fue modificada a <strong>${tipoCita.options[tipoCita.selectedIndex].text}</strong> el <strong>${fecha.value}</strong> a las <strong>${hora.value}</strong>.<br>${liberaAnterior ? "El horario anterior ha sido liberado." : "El horario anterior NO fue liberado por estar muy cerca de la fecha actual."}`;
       resumen.style.display = "block";
+    });
+
+    btnCancelarCita.addEventListener("click", () => {
+      modalCancelar.style.display = "block";
+    });
+
+    confirmarCancelacion.addEventListener("click", () => {
+      const ahora = new Date();
+      const diferenciaHoras = (citaAnterior - ahora) / (1000 * 60 * 60);
+      const liberada = diferenciaHoras >= 24;
+      resumen.innerHTML = `❌ La cita ha sido cancelada correctamente.<br>${liberada ? "El horario ha sido liberado para otros estudiantes." : "El horario no será reutilizable por ser cancelado muy tarde."}`;
+      resumen.style.display = "block";
+      modalCancelar.style.display = "none";
+    });
+
+    window.addEventListener("offline", () => {
+      alert("❗ Error de conexión. Esperando reconexión...");
+    });
+
+    window.addEventListener("online", () => {
+      alert("✅ Conexión restablecida. Puedes continuar.");
     });
   </script>
 </body>
